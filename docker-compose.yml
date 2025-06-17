@@ -1,0 +1,42 @@
+services:
+  master-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: master-app
+    working_dir: /var/www/
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 2G
+    volumes:
+      - ./app/larafilament:/var/www/master-app
+      - ./supervisor/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+    ports:
+      - "80:80"
+    networks:
+      - master-app-network
+
+  larafilament-db:
+    image: postgres:17
+    container_name: larafilament-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 2G
+    volumes:
+      - ./postgres/larafilament-db:/var/lib/postgresql/data
+    networks:
+      - master-app-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres_larafilament_db
+
+networks:
+  master-app-network:
